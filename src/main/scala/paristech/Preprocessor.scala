@@ -2,6 +2,7 @@ package paristech
 
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.DataFrame
 
 object Preprocessor {
 
@@ -39,6 +40,31 @@ object Preprocessor {
       *       if problems with unimported modules => sbt plugins update
       *
       ********************************************************************************/
+
+    // 1.1 - Chargement des données
+    import spark.implicits._
+    val path_to_data: String = "/home/thomas/MyDevel/BGD-private/INF729_spark/TP/"
+    val df: DataFrame = spark
+      .read
+      .option("header", true) // utilise la première ligne du (des) fichier(s) comme header
+      .option("inferSchema", "true") // pour inférer le type de chaque colonne (Int, String, etc.)
+      .csv(path=path_to_data + "data/train_clean.csv")
+
+    println(s"Nombre de lignes : ${df.count}")
+    println(s"Nombre de colonnes : ${df.columns.length}")
+
+    // 1.2 - Assignez le type Int aux colonnes qui vous semble contenir des entiers
+
+    val dfCasted: DataFrame = df
+      .withColumn("goal", $"goal".cast("Int"))
+      .withColumn("deadline" , $"deadline".cast("Int"))
+      .withColumn("state_changed_at", $"state_changed_at".cast("Int"))
+      .withColumn("created_at", $"created_at".cast("Int"))
+      .withColumn("launched_at", $"launched_at".cast("Int"))
+      .withColumn("backers_count", $"backers_count".cast("Int"))
+      .withColumn("final_status", $"final_status".cast("Int"))
+
+    // 2.1 Cleaning
 
     println("\n")
     println("Hello World ! from Preprocessor")
