@@ -3,6 +3,7 @@ package paristech
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.functions._
 
 object Preprocessor {
 
@@ -41,20 +42,19 @@ object Preprocessor {
       *
       ********************************************************************************/
 
-    // 1.1 - Chargement des données
+    // 1. Load the data
     import spark.implicits._
     val path_to_data: String = "/home/thomas/MyDevel/BGD-private/INF729_spark/TP/"
     val df: DataFrame = spark
       .read
-      .option("header", true) // utilise la première ligne du (des) fichier(s) comme header
+      .option("header", "true") // utilise la première ligne du (des) fichier(s) comme header
       .option("inferSchema", "true") // pour inférer le type de chaque colonne (Int, String, etc.)
       .csv(path=path_to_data + "data/train_clean.csv")
 
     println(s"Nombre de lignes : ${df.count}")
     println(s"Nombre de colonnes : ${df.columns.length}")
 
-    // 1.2 - Assignez le type Int aux colonnes qui vous semble contenir des entiers
-
+    // 2. Recast some columns to Int
     val dfCasted: DataFrame = df
       .withColumn("goal", $"goal".cast("Int"))
       .withColumn("deadline" , $"deadline".cast("Int"))
@@ -64,7 +64,65 @@ object Preprocessor {
       .withColumn("backers_count", $"backers_count".cast("Int"))
       .withColumn("final_status", $"final_status".cast("Int"))
 
-    // 2.1 Cleaning
+    // 3. Cleaning
+    val df2: DataFrame = dfCasted.drop("disable_communication")
+
+    val dfNoFutur: DataFrame = df2.drop("backers_count", "state_changed_at")
+
+    def cleanCountry(country: String, currency: String): String = {
+      if (country == "False")
+        currency
+      else
+        country
+    }
+
+    def cleanCurrency(currency: String): String = {
+      if (currency != null && currency.length != 3)
+        null
+      else
+        currency
+    }
+
+    val cleanCountryUdf = udf(cleanCountry _)
+    val cleanCurrencyUdf = udf(cleanCurrency _)
+
+    val dfCountry: DataFrame = dfNoFutur
+      .withColumn("country2", cleanCountryUdf($"country", $"currency"))
+      .withColumn("currency2", cleanCurrencyUdf($"currency"))
+      .drop("country", "currency")
+
+    // 4. Add columns
+    def timestampDiffInHours(end: Int, start: Int): Double = {
+      val diff: Double = (end - start) / 3600.0
+      return diff
+    }
+
+    // make the UDF
+    val timestampDiffInHoursUdf = udf(timestampDiffInHours _)
+
+    val dfDatetime: DataFrame = dfCountry
+      .withColumn("days_campaign",
+        datediff(from_unixtime($"deadline"), from_unixtime($"launched_at")))
+      .withColumn("hours_prepa",
+        round(timestampDiffInHoursUdf($"launched_at", $"created_at"), 3))
+      .drop("launched_at", "created_at", "deadline")
+
+    val dfText: DataFrame = dfDatetime
+      .withColumn("name", lower($"name"))
+      .withColumn("desc", lower($"desc"))
+      .withColumn("keywords", lower($"keywords"))
+      .withColumn("text", concat_ws(" ", $"name", $"desc", $"keywords"))
+
+    // 5. Null values
+    val dfNotNull: DataFrame = dfText
+      .na.fill(-1, Seq("days_campaign"))
+      .na.fill(-1, Seq("hours_prepa"))
+      .na.fill(-1, Seq("goal"))
+      .na.fill("Unknown", Seq("country2"))
+      .na.fill("Unknown", Seq("currency2"))
+
+    // 6. Save
+    dfNotNull.write.parquet("data/parquet")
 
     println("\n")
     println("Hello World ! from Preprocessor")

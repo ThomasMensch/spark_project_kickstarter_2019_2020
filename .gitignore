@@ -19,3 +19,5 @@ project/plugins/project/
 
 # spark
 metastore_db/
+/.project
+/.gitignore
