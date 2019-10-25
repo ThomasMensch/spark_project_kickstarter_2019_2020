@@ -94,7 +94,7 @@ object Preprocessor {
     // 4. Add columns
     def timestampDiffInHours(end: Int, start: Int): Double = {
       val diff: Double = (end - start) / 3600.0
-      return diff
+      diff
     }
 
     // make the UDF
