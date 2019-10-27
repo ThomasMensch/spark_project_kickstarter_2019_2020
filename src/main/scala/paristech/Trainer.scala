@@ -56,10 +56,10 @@ object Trainer {
       *
       * *******************************************************************************/
 
-    // 1. Load the data
+    // 1. Load DataFrame from TP2 (parquet file)
     val path_to_data: String = "/home/thomas/MyDevel/workspace-github/spark_project_kickstarter_2019_2020/data/"
-    val preprocessed: DataFrame = spark.read.parquet(path_to_data + "prepared_trainingset")
-    //val preprocessed: DataFrame = spark.read.parquet(path_to_data + "parquet")
+ //   val preprocessed: DataFrame = spark.read.parquet(path_to_data + "prepared_trainingset")
+    val preprocessed: DataFrame = spark.read.parquet(path_to_data + "parquet")
 
     // 2. Transform text into a feature vector
     val tokenizer = new RegexTokenizer()

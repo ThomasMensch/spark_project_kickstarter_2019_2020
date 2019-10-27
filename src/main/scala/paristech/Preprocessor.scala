@@ -44,12 +44,14 @@ object Preprocessor {
 
     // 1. Load the data
     import spark.implicits._
-    val path_to_data: String = "/home/thomas/MyDevel/BGD-private/INF729_spark/TP/"
+    //val path_to_data: String = "/home/thomas/MyDevel/BGD-private/INF729_spark/TP/"
+    val path_to_data: String = "/home/thomas/MyDevel/workspace-github/spark_project_kickstarter_2019_2020/data/"
+
     val df: DataFrame = spark
       .read
       .option("header", "true") // utilise la première ligne du (des) fichier(s) comme header
       .option("inferSchema", "true") // pour inférer le type de chaque colonne (Int, String, etc.)
-      .csv(path=path_to_data + "data/train_clean.csv")
+      .csv(path=path_to_data + "train_clean.csv")
 
     println(s"Nombre de lignes : ${df.count}")
     println(s"Nombre de colonnes : ${df.columns.length}")
@@ -69,12 +71,20 @@ object Preprocessor {
 
     val dfNoFutur: DataFrame = df2.drop("backers_count", "state_changed_at")
 
-    def cleanCountry(country: String, currency: String): String = {
-      if (country == "False")
-        currency
-      else
-        country
-    }
+ //   def cleanCountry(country: String, currency: String): String = {
+ //     if (country == "False")
+ //       currency
+ //     else
+ //       country
+ //  }
+     def cleanCountry(country: String, currency: String): String = {
+       if (country == "False")
+         currency
+       else if (country != null && country.length != 2)
+         null
+       else
+         country
+     }
 
     def cleanCurrency(currency: String): String = {
       if (currency != null && currency.length != 3)
