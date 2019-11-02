@@ -42,8 +42,9 @@ object Preprocessor {
       *
       ********************************************************************************/
 
-    // 1. Load the data
     import spark.implicits._
+
+    // 1. Load the data
     //val path_to_data: String = "/home/thomas/MyDevel/BGD-private/INF729_spark/TP/"
     val path_to_data: String = "/home/thomas/MyDevel/workspace-github/spark_project_kickstarter_2019_2020/data/"
 
@@ -66,26 +67,22 @@ object Preprocessor {
       .withColumn("backers_count", $"backers_count".cast("Int"))
       .withColumn("final_status", $"final_status".cast("Int"))
 
-    // 3. Cleaning
+     // 3. Cleaning using UDF functions
     val df2: DataFrame = dfCasted.drop("disable_communication")
 
     val dfNoFutur: DataFrame = df2.drop("backers_count", "state_changed_at")
 
- //   def cleanCountry(country: String, currency: String): String = {
- //     if (country == "False")
- //       currency
- //     else
- //       country
- //  }
-     def cleanCountry(country: String, currency: String): String = {
-       if (country == "False")
-         currency
-       else if (country != null && country.length != 2)
-         null
-       else
-         country
-     }
+    // create UDF to clean 'country' records
+    def cleanCountry(country: String, currency: String): String = {
+      if (country == "False")
+        currency
+      else if (country != null && country.length != 2)
+        null
+      else
+        country
+    }
 
+    // create UDF to clean 'currency' records
     def cleanCurrency(currency: String): String = {
       if (currency != null && currency.length != 3)
         null
@@ -131,7 +128,7 @@ object Preprocessor {
       .na.fill("Unknown", Seq("country2"))
       .na.fill("Unknown", Seq("currency2"))
 
-    // 6. Save
+    // 6. Save as parquet files
     dfNotNull.write.parquet("data/parquet")
 
     println("\n")
