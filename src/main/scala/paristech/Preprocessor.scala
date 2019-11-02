@@ -128,6 +128,13 @@ object Preprocessor {
       .na.fill("Unknown", Seq("country2"))
       .na.fill("Unknown", Seq("currency2"))
 
+//    val df_clean: DataFrame  = dfNotNull
+//      .filter($"days_campaign" =!= -1)
+//      .filter($"hours_prepa" =!= -1)
+//      .filter($"goal" =!= -1)
+//      .filter($"country2" =!= "Unknown")
+//      .filter($"currency2" =!= "Unknown")
+
     // 6. Save as parquet files
     dfNotNull.write.parquet("data/parquet")
 

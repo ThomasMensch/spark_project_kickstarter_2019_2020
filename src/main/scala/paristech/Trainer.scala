@@ -56,10 +56,20 @@ object Trainer {
       *
       * *******************************************************************************/
 
+    import spark.implicits._
+
     // 1. Load DataFrame from TP2 (parquet file)
     val path_to_data: String = "/home/thomas/MyDevel/workspace-github/spark_project_kickstarter_2019_2020/data/"
  //   val preprocessed: DataFrame = spark.read.parquet(path_to_data + "prepared_trainingset")
-    val preprocessed: DataFrame = spark.read.parquet(path_to_data + "parquet")
+    val df: DataFrame = spark.read.parquet(path_to_data + "parquet")
+
+    // Data cleaning before processing. We remove rows with records set to -1 and 'Unknown' (see TP2)
+    val preprocessed: DataFrame = df
+      .filter($"days_campaign" =!= -1)
+      .filter($"hours_prepa" =!= -1)
+      .filter($"goal" =!= -1)
+      .filter($"country2" =!= "Unknown")
+      .filter($"currency2" =!= "Unknown")
 
     // 2. Transform text into a feature vector
     val tokenizer = new RegexTokenizer()
