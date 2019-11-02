@@ -128,28 +128,44 @@ object Trainer {
       .setRawPredictionCol("raw_predictions")
       .setThresholds(Array(0.7, 0.3))
       .setTol(1.0e-6)
-      .setMaxIter(100)
+      .setMaxIter(30)
 
     // === Pipeline ===
     val pipeline = new Pipeline()
       .setStages(Array(tokenizer, remover, countVectorizer, idf,
         countryIndexer, currencyIndexer, encoder, assembler, lr))
 
+    // === Training, test and backup of the model ===
+    // Split of the data in 2 sets: training and test
+    // We split the data in 2 sets: 90 % of the data for training and 10 % for testing.
+    // Note that we use the initial dataframe preprocessed.
     val Array(training, test) = preprocessed.randomSplit(Array(0.9, 0.1), 13)
 
-    //Entraînement du classifieur et réglage des hyper-paramètres de l’algorithme
-    /** k) Préparer la grid-search pour satisfaire les conditions explicitées ci-dessus
-      *    puis lancer la grid-search sur le dataset “training” préparé précédemment.  */
+    // Training of the model
+    val model_one = pipeline.fit(training)
+
+    // Make predictions from test data
+    val dfWithSimplePredictions = model_one.transform(test)
+      .select("features", "final_status", "predictions")
+
+    dfWithSimplePredictions.groupBy("final_status", "predictions").count.show()
+
+    // Evaluation of the model / test
+    // We use f1-score to compare models
+    val evaluator = new MulticlassClassificationEvaluator()
+      .setLabelCol("final_status")
+      .setPredictionCol("predictions")
+      .setMetricName("f1")
+
+    val f1_score = evaluator.evaluate(dfWithSimplePredictions)
+
+    printf("The f1 score on test set is : %.3f\n", f1_score)
+
+    // Tuning of hyper-parameters of the model
     val paramGrid = new ParamGridBuilder()
       .addGrid(lr.regParam, Array(10e-8, 10e-6, 10e-4, 10e-2))
       .addGrid(countVectorizer.minDF, Array[Double](55, 75, 95))
       .build()
-
-    // On veut utiliser le f1-score pour comparer les modèles
-    val evaluator = new MulticlassClassificationEvaluator()
-      .setLabelCol("final_status")
-      .setPredictionCol("predictions")
-      .setMetricName("f1")  // La métrique "f1" n'est pas dispo en BinaryClassification, d'où l'utilisation de Multiclass
 
     val trainValidationSplit = new TrainValidationSplit()
       .setEstimator(pipeline)
@@ -157,17 +173,20 @@ object Trainer {
       .setEstimatorParamMaps(paramGrid)
       .setTrainRatio(0.7) // 70% of the data will be used for training and the remaining 30% for validation.
 
-    // Fit the pipeline to training documents.
-    val model = trainValidationSplit.fit(training)
+    // Fit the pipeline to training set.
+    val tvs_model = trainValidationSplit.fit(training)
 
-    val predictions = model
+    val predictions = tvs_model
       .transform(test)
       .select("features", "final_status", "predictions")
+
+    predictions.groupBy("final_status", "predictions").count.show()
 
     val f1_score = evaluator.evaluate(predictions)
 
     println("The f1 score on test set is : " + f1_score + "\n")
 
+    tvs_model.write.overwrite().save("save/spark-logistic-regression-model")
     println("hello world ! from Trainer")
   }
 }
