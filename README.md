@@ -10,3 +10,6 @@ Spark project for MS Big Data Telecom based on Kickstarter campaigns 2019-2020
 
 
 
+Before grid search we have a f1-score of 0.613
+
+After grid-search the f1-score increases to 0.652
