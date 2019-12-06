@@ -186,7 +186,7 @@ object Trainer {
 
     val f1_score_one = evaluator.evaluate(dfWithSimplePredictions)
 
-    writer.write("\nThe f1 score on test set (before grid search) is : %.3f\n\n".format(f1_score_one))
+    writer.write("\nThe f1 score on test set [before grid search] is : %.3f\n\n".format(f1_score_one))
     writer.flush()
 
     // 7. Grid search
@@ -219,7 +219,7 @@ object Trainer {
     // 7.4 Evaluate F1 score
     val f1_score_2 = evaluator.evaluate(predictions)
 
-    writer.write("\nThe f1 score on test set is : %.3f\n\n".format(f1_score_2))
+    writer.write("\nThe f1 score on test set [after grid search] is : %.3f\n\n".format(f1_score_2))
 
     // 8. Save the best model
     tvs_model.write.overwrite().save("save/spark-logistic-regression-model")
