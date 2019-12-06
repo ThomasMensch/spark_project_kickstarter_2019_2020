@@ -136,7 +136,7 @@ object Preprocessor {
 //      .filter($"currency2" =!= "Unknown")
 
     // 6. Save as parquet files
-    dfNotNull.write.parquet("data/parquet")
+    dfNotNull.write.parquet("data/parquet_TP2")
 
     println("\n")
     println("Hello World ! from Preprocessor")

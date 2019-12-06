@@ -1,0 +1,14 @@
+1.1 Load data (from TP2)
+1.2 Extra cleaning of data -> done
+2. Transform text data -> done
+3. Convert categorial data -> done
+4. Prepare data for ML processing -> done
+5. Create Pipeline -> done
+6.1. Split data in 2 sets: training (90%) and test (10%) -> done
+6.2. Training of the model -> done
+6.3. Make predictions from test data -> done
+The f1 score on test set (before grid search) is : 0.613
+7.1. Tuning of hyper-parameters of the model -> done
+7.2. Train validation -> done
+The f1 score on test set is : 0.652
+8. Save the best model -> done
