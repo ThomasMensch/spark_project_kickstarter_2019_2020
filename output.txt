@@ -9,15 +9,27 @@
 ===== LOGISTIC REGRESSION =====
 
 5. Create Pipeline -> done
-6.1. Split data in 2 sets: training (90%) and test (10%) -> done
-6.2. Training of the model -> done
-6.3. Make predictions from test data -> done
+6.1 Split data in 2 sets: training (90%) and test (10%) -> done
+6.2 Training of the model -> done
+6.3 Make predictions from test data -> done
 
 The f1 score on test set [before grid search] is : 0.613
 
-7.1. Tuning of hyper-parameters of the model -> done
-7.2. Train validation -> done
+7.1 Tuning of hyper-parameters of the model -> done
+7.2 Train validation -> done
 
 The f1 score on test set [after grid search] is : 0.652
 
 8. Save the best model -> done
+
+===== FEATURE ENGINEERING =====
+
+9.1 Create new column 'goal2' -> done
+9.2 Assemble all features -> done
+9.3 Create Pipeline -> done
+9.5 Grid search - Tuning of hyper-parameters of the model -> done
+9.6 Train validation -> done
+
+The f1 score on test set [after grid search and variable engineering] is : 0.672
+
+9.7 Save the best model -> done

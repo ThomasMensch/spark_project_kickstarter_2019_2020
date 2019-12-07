@@ -2,6 +2,9 @@ package paristech
 
 import java.io._
 
+import scala.math.log1p
+import org.apache.spark.sql.functions._
+
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
@@ -67,6 +70,8 @@ object Trainer {
     val path_to_data: String = "ressources/"
     val df: DataFrame = spark.read.parquet(path_to_data + "preprocessed")
 
+    writer.write("\n===== LOAD DATA AND DATA TRANSFORMATION =====\n\n")
+        
     writer.write("1.1 Load data (from TP2) -> done\n")
 
     writer.write("\tSize of data: %d x %d\n".format(df.count(), df.columns.length))
@@ -170,20 +175,20 @@ object Trainer {
     // 6.1 We split the data in 2 sets: 90 % of the data for training and 10 % for testing.
     val Array(training, test) = preprocessed.randomSplit(Array(0.9, 0.1), 13)
 
-    writer.write("6.1. Split data in 2 sets: training (90%) and test (10%) -> done\n")
+    writer.write("6.1 Split data in 2 sets: training (90%) and test (10%) -> done\n")
     writer.flush()
 
     // 6.2 Training of the model
     val model_one = pipeline.fit(training)
 
-    writer.write("6.2. Training of the model -> done\n")
+    writer.write("6.2 Training of the model -> done\n")
     writer.flush()
 
     // 6.3 Make predictions from test data
     val dfWithSimplePredictions = model_one.transform(test)
       .select("features", "final_status", "predictions")
 
-    writer.write("6.3. Make predictions from test data -> done\n")
+    writer.write("6.3 Make predictions from test data -> done\n")
     writer.flush()
 
     // 6.4 Evaluation of the model / test (before grid search)
@@ -199,6 +204,8 @@ object Trainer {
     writer.flush()
 
     // 7. Grid search
+    writer.write("\n===== GRID SEARCH =====\n\n")
+
     // 7.1 Tuning of hyper-parameters of the model
     val paramGrid = new ParamGridBuilder()
       .addGrid(lr.regParam, Array(10e-8, 10e-6, 10e-4, 10e-2))
@@ -209,15 +216,15 @@ object Trainer {
       .setEstimator(pipeline)
       .setEvaluator(evaluator)
       .setEstimatorParamMaps(paramGrid)
-      .setTrainRatio(0.7) // 70% of the data will be used for training and the remaining 30% for validation.
+      .setTrainRatio(0.7) // 70% of the data for training and 30% for validation.
 
-    writer.write("7.1. Tuning of hyper-parameters of the model -> done\n")
+    writer.write("7.1 Tuning of hyper-parameters of the model -> done\n")
     writer.flush()
 
     // 7.2 Train validation
     val tvs_model = trainValidationSplit.fit(training)
 
-    writer.write("7.2. Train validation -> done\n")
+    writer.write("7.2 Train validation -> done\n")
     writer.flush()
 
     // 7.3 Make predictions from test data
@@ -236,6 +243,76 @@ object Trainer {
     writer.write("8. Save the best model -> done\n")
     writer.flush()
     
+    // 9. Feature engineering
+    writer.write("\n===== FEATURE ENGINEERING =====\n\n")
+    
+    // 9.1 Create new column "goal2"=log1p(goal) 
+    def goalLog(x: Double): Double = {
+      val x_out = log1p(x)
+      x_out
+    }
+
+    val goalLogUdf = udf(goalLog _)
+
+    val preprocessed_2: DataFrame = preprocessed
+      .withColumn("goal", $"goal".cast("Double"))
+      .withColumn("goal2", goalLogUdf($"goal"))
+
+    writer.write("9.1 Create new column 'goal2' -> done\n")
+    
+    // 9.2 Assemble all features as a unique vector
+    val assembler_2 = new VectorAssembler()
+      .setInputCols(Array("tfidf", "days_campaign", "hours_prepa",
+          "goal2", "country_onehot", "currency_onehot"))
+      .setOutputCol("features")
+    
+    writer.write("9.2 Assemble all features -> done\n")
+     
+    // 9.3 Create Pipeline
+    val pipeline_2 = new Pipeline()
+      .setStages(Array(tokenizer, remover, countVectorizer, idf,
+        countryIndexer, currencyIndexer, encoder, assembler_2, lr))
+
+    writer.write("9.3 Create Pipeline -> done\n")
+    writer.flush()
+
+    // 9.4 We split the data in 2 sets: 90 % of the data for training and 10 % for testing.
+    val Array(training_2, test_2) = preprocessed_2.randomSplit(Array(0.9, 0.1), 13)
+    
+    // 9.5 Grid search - Tuning of hyper-parameters of the model
+    val trainValidationSplit_2 = new TrainValidationSplit()
+      .setEstimator(pipeline_2)
+      .setEvaluator(evaluator)
+      .setEstimatorParamMaps(paramGrid)
+      .setTrainRatio(0.7) // 70% of the data for training and 30% for validation.
+
+    writer.write("9.5 Grid search - Tuning of hyper-parameters of the model -> done\n")
+    writer.flush()
+
+    // 9.6 Train validation
+    val tvs_model_2 = trainValidationSplit_2.fit(training_2)
+
+    writer.write("9.6 Train validation -> done\n")
+    writer.flush()
+
+    // 9.7 Make predictions from test data
+    val predictions_2 = tvs_model_2
+      .transform(test_2)
+      .select("features", "final_status", "predictions")
+
+    // 9.8 Evaluate F1 score
+    val f1_score_3 = evaluator.evaluate(predictions_2)
+
+    writer.write("\nThe f1 score on test set [after grid search and variable engineering] is : %.3f\n\n"
+        .format(f1_score_3))
+
+    // 9.9 Save the best model
+    tvs_model.write.overwrite().save("ressources/best-logistic-regression-model-2")
+
+    writer.write("9.9 Save the best model -> done\n")
+    writer.flush()
+    
+    // Close file
     writer.close()
 
     println("hello world ! from Trainer")
