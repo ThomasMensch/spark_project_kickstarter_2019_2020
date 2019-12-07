@@ -69,6 +69,8 @@ object Trainer {
 
     writer.write("1.1 Load data (from TP2) -> done\n")
 
+    writer.write("\tSize of data: %d x %d\n".format(df.count(), df.columns.length))
+    
     // Data cleaning before processing.
     // We remove rows with records set to -1 and 'Unknown' (see TP2)
     val preprocessed: DataFrame = df
@@ -79,6 +81,8 @@ object Trainer {
       .filter($"currency2" =!= "Unknown")
 
     writer.write("1.2 Extra cleaning of data -> done\n")
+    writer.write("\tSize of data: %d x %d\n".format(preprocessed.count(),
+                                                    preprocessed.columns.length))
     writer.flush()
 
     // 2. Transform text data

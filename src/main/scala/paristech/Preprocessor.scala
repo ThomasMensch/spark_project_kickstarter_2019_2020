@@ -53,8 +53,8 @@ object Preprocessor {
       .option("inferSchema", "true") // pour inférer le type de chaque colonne (Int, String, etc.)
       .csv(path=path_to_data + "train_clean.csv")
 
-    println(s"Nombre de lignes : ${df.count}")
-    println(s"Nombre de colonnes : ${df.columns.length}")
+    //println(s"Nombre de lignes : ${df.count}")
+    //println(s"Nombre de colonnes : ${df.columns.length}")
 
     // 2. Recast some columns to Int
     val dfCasted: DataFrame = df

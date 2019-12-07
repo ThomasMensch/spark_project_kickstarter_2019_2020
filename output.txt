@@ -1,5 +1,7 @@
 1.1 Load data (from TP2) -> done
+	Size of data: 108129 x 11
 1.2 Extra cleaning of data -> done
+	Size of data: 107615 x 11
 2. Transform text data -> done
 3. Convert categorial data -> done
 4. Prepare data for ML processing -> done
