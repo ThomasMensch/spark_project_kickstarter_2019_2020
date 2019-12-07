@@ -67,7 +67,7 @@ object Trainer {
     val writer = new PrintWriter(new File("output.txt"))
 
     // 1. Load DataFrame from TP2 (parquet file)
-    val path_to_data: String = "ressources/"
+    val path_to_data: String = "resources/"
     val df: DataFrame = spark.read.parquet(path_to_data + "preprocessed")
 
     writer.write("\n===== LOAD DATA AND DATA TRANSFORMATION =====\n\n")
@@ -238,7 +238,7 @@ object Trainer {
     writer.write("\nThe f1 score on test set [after grid search] is : %.3f\n\n".format(f1_score_2))
 
     // 8. Save the best model
-    tvs_model.write.overwrite().save("ressources/best-logistic-regression-model")
+    tvs_model.write.overwrite().save("resources/best-logistic-regression-model")
 
     writer.write("8. Save the best model -> done\n")
     writer.flush()
@@ -307,7 +307,7 @@ object Trainer {
         .format(f1_score_3))
 
     // 9.9 Save the best model
-    tvs_model.write.overwrite().save("ressources/best-logistic-regression-model-2")
+    tvs_model.write.overwrite().save("resources/best-logistic-regression-model-2")
 
     writer.write("9.9 Save the best model -> done\n")
     writer.flush()

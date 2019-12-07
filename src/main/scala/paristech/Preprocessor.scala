@@ -45,7 +45,7 @@ object Preprocessor {
     import spark.implicits._
 
     // 1. Load the data
-    val path_to_data: String = "ressources/train/"
+    val path_to_data: String = "resources/train/"
 
     val df: DataFrame = spark
       .read
@@ -131,7 +131,7 @@ object Preprocessor {
       .na.fill("Unknown", Seq("currency2"))
 
     // 6. Save as parquet files
-    dfNotNull.write.parquet("ressources/preprocessed")
+    dfNotNull.write.parquet("resources/preprocessed")
 
     println("\n")
     println("Hello World ! from Preprocessor")
