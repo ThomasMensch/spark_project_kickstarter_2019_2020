@@ -21,4 +21,6 @@ path_to_spark="/mnt/c/spark/spark-2.3.4-bin-hadoop2.7"
 
 if [ -n "$2" ]; then path_to_spark=$2; fi
 
-$path_to_spark/bin/spark-submit --conf spark.eventLog.enabled=true --conf spark.eventLog.dir="/tmp" --driver-memory 10g --class paristech.$1 target/scala-2.11/*.jar
+$path_to_spark/bin/spark-submit --conf spark.eventLog.enabled=true \
+	--conf spark.eventLog.dir="/tmp" --driver-memory 10g \
+	--class paristech.$1 target/scala-2.11/*.jar
