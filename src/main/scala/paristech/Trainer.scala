@@ -60,6 +60,7 @@ object Trainer {
 
     import spark.implicits._
 
+    // Create file to monitor steps of the program
     val writer = new PrintWriter(new File("output.txt"))
 
     // 1. Load DataFrame from TP2 (parquet file)
@@ -226,7 +227,7 @@ object Trainer {
     writer.write("\nThe f1 score on test set [after grid search] is : %.3f\n\n".format(f1_score_2))
 
     // 8. Save the best model
-    tvs_model.write.overwrite().save("save/spark-logistic-regression-model")
+    tvs_model.write.overwrite().save("ressources/best-logistic-regression-model")
 
     writer.write("8. Save the best model -> done\n")
     writer.flush()

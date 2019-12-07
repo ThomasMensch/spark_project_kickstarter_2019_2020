@@ -1,4 +1,4 @@
-1.1 Load data (from TP2)
+1.1 Load data (from TP2) -> done
 1.2 Extra cleaning of data -> done
 2. Transform text data -> done
 3. Convert categorial data -> done
