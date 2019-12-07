@@ -63,12 +63,13 @@ object Trainer {
     val writer = new PrintWriter(new File("output.txt"))
 
     // 1. Load DataFrame from TP2 (parquet file)
-    val path_to_data: String = "data/"
-    val df: DataFrame = spark.read.parquet(path_to_data + "parquet_TP2")
+    val path_to_data: String = "ressources/"
+    val df: DataFrame = spark.read.parquet(path_to_data + "preprocessed")
 
-    writer.write("1.1 Load data (from TP2)\n")
+    writer.write("1.1 Load data (from TP2) -> done\n")
 
-    // Data cleaning before processing. We remove rows with records set to -1 and 'Unknown' (see TP2)
+    // Data cleaning before processing.
+    // We remove rows with records set to -1 and 'Unknown' (see TP2)
     val preprocessed: DataFrame = df
       .filter($"days_campaign" =!= -1)
       .filter($"hours_prepa" =!= -1)
@@ -149,6 +150,9 @@ object Trainer {
     writer.write("4. Prepare data for ML processing -> done\n")
     writer.flush()
 
+    writer.write("\n===== LOGISTIC REGRESSION =====\n\n")
+    writer.flush()
+    
     // 5. Create Pipeline
     val pipeline = new Pipeline()
       .setStages(Array(tokenizer, remover, countVectorizer, idf,
@@ -226,7 +230,7 @@ object Trainer {
 
     writer.write("8. Save the best model -> done\n")
     writer.flush()
-
+    
     writer.close()
 
     println("hello world ! from Trainer")

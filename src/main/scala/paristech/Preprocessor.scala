@@ -45,8 +45,7 @@ object Preprocessor {
     import spark.implicits._
 
     // 1. Load the data
-    //val path_to_data: String = "/home/thomas/MyDevel/BGD-private/INF729_spark/TP/"
-    val path_to_data: String = "/home/thomas/MyDevel/workspace-github/spark_project_kickstarter_2019_2020/data/"
+    val path_to_data: String = "ressources/train/"
 
     val df: DataFrame = spark
       .read
@@ -72,7 +71,7 @@ object Preprocessor {
 
     val dfNoFutur: DataFrame = df2.drop("backers_count", "state_changed_at")
 
-    // create UDF to clean 'country' records
+    // 3.1 create UDF to clean 'country' records
     def cleanCountry(country: String, currency: String): String = {
       if (country == "False")
         currency
@@ -82,7 +81,9 @@ object Preprocessor {
         country
     }
 
-    // create UDF to clean 'currency' records
+    val cleanCountryUdf = udf(cleanCountry _)
+    
+    // 3.2 create UDF to clean 'currency' records
     def cleanCurrency(currency: String): String = {
       if (currency != null && currency.length != 3)
         null
@@ -90,30 +91,31 @@ object Preprocessor {
         currency
     }
 
-    val cleanCountryUdf = udf(cleanCountry _)
     val cleanCurrencyUdf = udf(cleanCurrency _)
 
+    // 3.3 Apply udf
     val dfCountry: DataFrame = dfNoFutur
       .withColumn("country2", cleanCountryUdf($"country", $"currency"))
       .withColumn("currency2", cleanCurrencyUdf($"currency"))
       .drop("country", "currency")
 
     // 4. Add columns
+    // 4.1 Add columns related to duration of the campaign
     def timestampDiffInHours(end: Int, start: Int): Double = {
       val diff: Double = (end - start) / 3600.0
       diff
     }
 
-    // make the UDF
     val timestampDiffInHoursUdf = udf(timestampDiffInHours _)
 
     val dfDatetime: DataFrame = dfCountry
-      .withColumn("days_campaign",
-        datediff(from_unixtime($"deadline"), from_unixtime($"launched_at")))
-      .withColumn("hours_prepa",
-        round(timestampDiffInHoursUdf($"launched_at", $"created_at"), 3))
+      .withColumn("days_campaign", datediff(from_unixtime($"deadline"),
+                                            from_unixtime($"launched_at")))
+      .withColumn("hours_prepa", round(timestampDiffInHoursUdf($"launched_at",
+                                                               $"created_at"), 3))
       .drop("launched_at", "created_at", "deadline")
 
+    // 4.2 Transform text columns  
     val dfText: DataFrame = dfDatetime
       .withColumn("name", lower($"name"))
       .withColumn("desc", lower($"desc"))
@@ -128,15 +130,8 @@ object Preprocessor {
       .na.fill("Unknown", Seq("country2"))
       .na.fill("Unknown", Seq("currency2"))
 
-//    val df_clean: DataFrame  = dfNotNull
-//      .filter($"days_campaign" =!= -1)
-//      .filter($"hours_prepa" =!= -1)
-//      .filter($"goal" =!= -1)
-//      .filter($"country2" =!= "Unknown")
-//      .filter($"currency2" =!= "Unknown")
-
     // 6. Save as parquet files
-    dfNotNull.write.parquet("data/parquet_TP2")
+    dfNotNull.write.parquet("ressources/preprocessed")
 
     println("\n")
     println("Hello World ! from Preprocessor")
