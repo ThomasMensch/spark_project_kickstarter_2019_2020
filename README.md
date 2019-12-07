@@ -1,21 +1,36 @@
-# Projet Spark : Campagne Kickstarter 
+# Projet Spark : Campagne Kickstarter
 
 *Thomas Mensch* [thomas.mensch@gmail.com](mailto:thomas.mensch@gmail.com)
 
+### Organisation du répertoire
 
-## Table of contents
-### Introduction
-### Cleaning of the data
-
-
-Ce répertoire est organisé de la manière suivante:
+Ce répertoire les fichiers et répertoires suivants:
 
  - `README.md`: ce fichier
- - `build_and_submit.sh`: Script pour éxecuter les scripts *Scala*
+ - `build_and_submit.sh`: script bash pour éxecuter les scripts *Scala*
  - `src/main/scala/paristech`: répertoire contenant le code source en *Scala*
- - `resources`: Répertoire contenant les données initiales au format `.csv` 
+ - `resources/train`: répertoire contenant les données initiales au format `.csv` 
  
+### Traitement des données
+
+Le traitement des données s'effectue en deux étapes:
+ 1. Préparation du jeu de données
  
+ 	`./build_and_submit.sh Preprocessor`
+ 
+ 2. Construction d'un classifieur
+ 	`./build_and_submit.sh Trainer` 
+
+#### Préparation du jeu de données
+
+Le script `Preprocessor` prépare
+
+Les données sont sauvegardées au format *parquet*
+
+#### Construction d'un classifieur
+
+#### Résultats obtenus et tentative d'amélioration
+
 Les résultats obtenus sont l
 Before grid search we have a f1-score of 0.613
 

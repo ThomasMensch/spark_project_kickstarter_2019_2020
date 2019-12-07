@@ -198,6 +198,8 @@ object Trainer {
       .setPredictionCol("predictions")
       .setMetricName("f1")
 
+    dfWithSimplePredictions.groupBy("final_status", "predictions").count.show() 
+      
     val f1_score_one = evaluator.evaluate(dfWithSimplePredictions)
 
     writer.write("\nThe f1 score on test set [before grid search] is : %.3f\n\n".format(f1_score_one))
@@ -228,12 +230,14 @@ object Trainer {
     writer.flush()
 
     // 7.3 Make predictions from test data
-    val predictions = tvs_model
+    val dfWithPredictions = tvs_model
       .transform(test)
       .select("features", "final_status", "predictions")
 
+    dfWithPredictions.groupBy("final_status", "predictions").count.show()
+    
     // 7.4 Evaluate F1 score
-    val f1_score_2 = evaluator.evaluate(predictions)
+    val f1_score_2 = evaluator.evaluate(dfWithPredictions)
 
     writer.write("\nThe f1 score on test set [after grid search] is : %.3f\n\n".format(f1_score_2))
 
