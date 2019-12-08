@@ -202,7 +202,9 @@ object Trainer {
       
     val f1_score_one = evaluator.evaluate(dfWithSimplePredictions)
 
-    writer.write("\nThe f1 score on test set [before grid search] is : %.3f\n\n".format(f1_score_one))
+    println("F1-score on test set [before grid search]: %.3f".format(f1_score_one))
+    
+    writer.write("\nF1-score on test set [before grid search]: %.3f\n\n".format(f1_score_one))
     writer.flush()
 
     // 7. Grid search
@@ -239,7 +241,8 @@ object Trainer {
     // 7.4 Evaluate F1 score
     val f1_score_2 = evaluator.evaluate(dfWithPredictions)
 
-    writer.write("\nThe f1 score on test set [after grid search] is : %.3f\n\n".format(f1_score_2))
+    println("F1-score on test set [after grid search]: %.3f".format(f1_score_2))
+    writer.write("\nF1-score on test set [after grid search]: %.3f\n\n".format(f1_score_2))
 
     // 8. Save the best model
     tvs_model.write.overwrite().save("resources/best-logistic-regression-model")
@@ -300,14 +303,18 @@ object Trainer {
     writer.flush()
 
     // 9.7 Make predictions from test data
-    val predictions_2 = tvs_model_2
+    val dfWithPredictions_2 = tvs_model_2
       .transform(test_2)
       .select("features", "final_status", "predictions")
 
+    dfWithPredictions_2.groupBy("final_status", "predictions").count.show()
+      
     // 9.8 Evaluate F1 score
-    val f1_score_3 = evaluator.evaluate(predictions_2)
+    val f1_score_3 = evaluator.evaluate(dfWithPredictions_2)
 
-    writer.write("\nThe f1 score on test set [after grid search and variable engineering] is : %.3f\n\n"
+    println("F1-score on test set [after grid search and variable engineering]: %.3f".format(f1_score_3))
+
+    writer.write("\nF1-score on test set [after grid search and variable engineering]: %.3f\n\n"
         .format(f1_score_3))
 
     // 9.9 Save the best model
