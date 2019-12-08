@@ -4,7 +4,7 @@
 
 Le projet se trouve sur github: 
 
-    [https://github.com/ThomasMensch/spark_project_kickstarter_2019_2020_TMensch](https://github.com/ThomasMensch/spark_project_kickstarter_2019_2020_TMensch)
+[https://github.com/ThomasMensch/spark_project_kickstarter_2019_2020_TMensch](https://github.com/ThomasMensch/spark_project_kickstarter_2019_2020_TMensch)
 
 ### Introduction
 
